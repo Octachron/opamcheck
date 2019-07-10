@@ -13,3 +13,17 @@ network by a sandbox, composed of:
 
 This new version is still under construction. Its driver is an OCaml program
 instead of a bunch of bash and awk scripts.
+
+## Installation:
+
+   After cloning the repository, you need to
+
+   * install minisat and opam-file-format
+   * clone the opam-repository in sandbox
+   * clone the ocaml-beta-repository in sandbox/opam-repository/packages
+   * link the system curl to sandbox/bin/realcurl
+   * link the dune-built executable to opamcheck
+   * launch opamcheck after setting up OPCSANDBOX and PATH, e.g.
+         ./src/launch 4.03 4.06 4.09.0+beta1
+
+   * Current status is displayed on sandbox/status, use "tail -f sandbox/status" to display it if needed.
