@@ -150,34 +150,39 @@ let print_detail_list oc packvers l =
   | "]" :: h :: t -> fprintf oc " %s" h; loop t
   | l -> loop l
 
+let print_log ~mystate_dir ~data_dir ~verbose tag logfile l  =
+  let absf = Filename.quote (Filename.concat data_dir logfile) in
+  begin match Version.split_name_version (List.nth (List.rev l) 1) with
+    | (_, Some v) ->
+      let stdir = Filename.quote (Filename.concat mystate_dir v) in
+      let cmd =
+        sprintf "git -C %s show remotes/origin/%s:opamcheck-log > %s"
+          stdir tag absf
+      in
+      command ~verbose ~ignore_errors:true cmd;
+    | _ -> ()
+    | exception _ -> ()
+  end
+
+
 let print_detail_line
     ~verbose ~data_dir ~mystate_dir oc pack vers line
   =
   let packvers = sprintf "%s.%s" pack vers in
+  let logfile tag = sprintf "%s.%s-%s.txt" pack vers tag in
   match String.split_on_char ' ' line with
   | "fail" :: tag :: "[" :: (pv :: _ as l) when pv = packvers ->
-     let f = sprintf "%s.%s-%s.txt" pack vers tag in
-     let absf = Filename.quote (Filename.concat data_dir f) in
-     begin match Version.split_name_version (List.nth (List.rev l) 1) with
-     | (_, Some v) ->
-       let stdir = Filename.quote (Filename.concat mystate_dir v) in
-       let cmd =
-         sprintf "git -C %s show remotes/origin/%s:opamcheck-log > %s"
-                 stdir tag absf
-       in
-       command ~verbose ~ignore_errors:true cmd;
-     | _ -> ()
-     | exception _ -> ()
-     end;
-     fprintf oc "<a href=\"%s\" class=\"keyfail\">fail</a> %s<br>[" f tag;
+     print_log ~mystate_dir ~data_dir ~verbose tag (logfile tag) l;
+     fprintf oc "<a href=\"%s\" class=\"keyfail\">fail</a> %s<br>[" (logfile tag) tag;
      print_detail_list oc packvers l;
-     fprintf oc " ]\n<hr>\n"
+    fprintf oc " ]\n<hr>\n"
   | "fail" :: tag :: "[" :: l ->
      fprintf oc "<span class=\"keyok\">ok</span> %s<br>[" tag;
      print_detail_list oc packvers l;
      fprintf oc " ]\n<hr>\n"
   | "ok" :: tag :: "[" :: l ->
-     fprintf oc "<span class=\"keyok\">ok</span> %s<br>[" tag;
+     print_log ~mystate_dir ~data_dir ~verbose tag (logfile tag) l;
+     fprintf oc "<a href=\"%s\" class=\"keyok\">ok</span> %s<br>[" (logfile tag) tag;
      print_detail_list oc packvers l;
      fprintf oc " ]\n<hr>\n"
   | "depfail" :: tag :: pv :: "[" :: l ->
