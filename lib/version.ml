@@ -36,7 +36,7 @@ let split v =
   nondigit [] 0 0
 
 let compare_block s1 s2 n1 n2 k a1 a2 =
-  let comp_cont a b = if a = b then k a1 a2 else Pervasives.compare a b in
+  let comp_cont a b = if a = b then k a1 a2 else Stdlib.compare a b in
   if s1 = s2 then comp_cont n1 n2
   else begin
     let s1 = s1 ^ "0" and s2 = s2 ^ "0" in

@@ -21,7 +21,7 @@ let init ~sandbox () =
   let warnings = open_out (Filename.concat sandbox "warnings") in
   let trace = open_out (Filename.concat sandbox "trace") in
   loggers :=
-    Some { log = Pervasives.stdout; results; status; warnings; trace }
+    Some { log = Stdlib.stdout; results; status; warnings; trace }
 
 let get_loggers () =
   match !loggers with

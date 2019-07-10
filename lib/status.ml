@@ -36,7 +36,7 @@ let show ~sandbox () =
     (try Sys.remove stopfile with _ -> ());
     Log.log "STOPPED BY USER\n";
     Log.status "\nSTOPPED BY USER\n";
-    Pervasives.exit 10;
+    Stdlib.exit 10;
   end;
   let s1 =
     sprintf "%d %d/%d %s %s "

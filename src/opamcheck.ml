@@ -360,7 +360,7 @@ let main_run sandbox =
   in
   let cmp p1 p2 =
     Package.(
-      let c = Pervasives.compare p1.name p2.name in
+      let c = Stdlib.compare p1.name p2.name in
       if c = 0 then Version.compare p2.version p1.version else begin
         let w1 = SS.cardinal (SM.find p1.name u.Package.revdeps) in
         let w2 = SS.cardinal (SM.find p2.name u.Package.revdeps) in

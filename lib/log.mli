@@ -5,31 +5,31 @@
 
 val init : sandbox:string -> unit -> unit
 
-val log_chan : unit -> Pervasives.out_channel
+val log_chan : unit -> Stdlib.out_channel
 (** stdout *)
 
 val log : ('a, unit, string, unit) format4 -> 'a
 (** Write to stdout and flush. *)
 
-val res_chan : unit -> Pervasives.out_channel
+val res_chan : unit -> Stdlib.out_channel
 (** The results file *)
 
 val res : ('a, unit, string, unit) format4 -> 'a
 (** Write to the results file and flush. *)
 
-val status_chan : unit -> Pervasives.out_channel
+val status_chan : unit -> Stdlib.out_channel
 (** The status file *)
 
 val status : ('a, unit, string, unit) format4 -> 'a
 (** Write to the status file and flush. *)
 
-val warn_chan : unit -> Pervasives.out_channel
+val warn_chan : unit -> Stdlib.out_channel
 (** The warnings file *)
 
 val warn : ('a, unit, string, unit) format4 -> 'a
 (** Write to the warnings file and flush. *)
 
-val trace_chan : unit -> Pervasives.out_channel
+val trace_chan : unit -> Stdlib.out_channel
 (** The trace file *)
 
 val trace : ('a, unit, string, unit) format4 -> 'a

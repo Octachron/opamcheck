@@ -46,7 +46,7 @@ let encode_compare s1 s2 =
       if i >= String.length s2 then 0 else -1
     else if i >= String.length s2 then 1
     else if s1.[i] = s2.[i] then loop (i + 1)
-    else Pervasives.compare s1.[i] s2.[i]
+    else Stdlib.compare s1.[i] s2.[i]
   in
   loop 0
 

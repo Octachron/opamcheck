@@ -5,9 +5,10 @@
 
 module SM = Map.Make (String)
 
+let cmp = Stdlib.compare
 module StringPair = struct
   type t = string * string
-  let compare = Pervasives.compare
+  let compare = cmp
 end
 module SPM = Map.Make (StringPair)
 
@@ -22,7 +23,7 @@ module StringPairList = struct
     let len2 = List.length l2 in
     if len1 > len2 then -1
     else if len1 < len2 then 1
-    else Pervasives.compare l2 l1
+    else cmp l2 l1
 end
 module SPLS = Set.Make (StringPairList)
 
