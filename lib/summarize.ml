@@ -182,7 +182,7 @@ let print_detail_line
      fprintf oc " ]\n<hr>\n"
   | "ok" :: tag :: "[" :: l ->
      print_log ~mystate_dir ~data_dir ~verbose tag (logfile tag) l;
-     fprintf oc "<a href=\"%s\" class=\"keyok\">ok</span> %s<br>[" (logfile tag) tag;
+     fprintf oc "<a href=\"%s\" class=\"keyok\">ok</a> %s<br>[" (logfile tag) tag;
      print_detail_list oc packvers l;
      fprintf oc " ]\n<hr>\n"
   | "depfail" :: tag :: pv :: "[" :: l ->
