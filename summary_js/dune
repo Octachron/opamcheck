@@ -1,0 +1,2 @@
+(executable (name summary) (preprocess (pps js_of_ocaml.ppx)))
+

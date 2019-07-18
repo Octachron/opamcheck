@@ -328,8 +328,8 @@ td { text-align: center; }\n\
 </head>\n\
 "
 
-let html_body_start = ("<body>\n%s<table>\n" : _ format)
-let html_body_end = "</table></body></html>\n"
+let html_body_start = ("<body>\n%s<table id=\"opamcheck_table\">\n" : _ format)
+let html_body_end = "</table></body><script src=\"summary_js.b.js\"></script></html>\n"
 
 let read_results ~version file =
   let ic = open_in file in
