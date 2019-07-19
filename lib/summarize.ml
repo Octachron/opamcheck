@@ -324,12 +324,15 @@ let html_header = "\
 .tt:hover .ttt { visibility: visible; }\n\
 th { text-align: right; }\n\
 td { text-align: center; }\n\
+thead button { height:100%; width:100%; }
 </style>\n\
+<meta charset=\"UTF-8\">\n\
+<title>Opamcheck</title>
 </head>\n\
 "
 
 let html_body_start = ("<body>\n%s<table id=\"opamcheck_table\">\n" : _ format)
-let html_body_end = "</table></body><script src=\"summary_js.b.js\"></script></html>\n"
+let html_body_end = "</table>\n<script src=\"summary_js.b.js\"></script>\n</body></html>\n"
 
 let read_results ~version file =
   let ic = open_in file in

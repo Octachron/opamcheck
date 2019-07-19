@@ -1,2 +1,6 @@
-(executable (name summary) (preprocess (pps js_of_ocaml.ppx)))
+(executable
+  (name summary)
+  (libraries js_of_ocaml-lwt)
+  (preprocess (pps js_of_ocaml.ppx))
+)
 
