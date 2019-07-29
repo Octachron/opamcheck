@@ -332,7 +332,7 @@ thead button { height:100%; width:100%; }
 "
 
 let html_body_start = ("<body>\n%s<table id=\"opamcheck_table\">\n" : _ format)
-let html_body_end = "</table>\n<script src=\"summary_js.b.js\"></script>\n</body></html>\n"
+let html_body_end = "</table>\n<script src=\"summary_js.bc.js\"></script>\n</body></html>\n"
 
 let read_results ~version file =
   let ic = open_in file in
