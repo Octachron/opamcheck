@@ -8,6 +8,7 @@ val summarize :
   verbose:bool ->
   header:string ->
   sandbox:string ->
+  log_dir:string ->
   version:string ->
   unit ->
   unit

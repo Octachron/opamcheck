@@ -350,11 +350,11 @@ let read_weights file =
   loop SM.empty
 
 let summarize
-    ~show_all ~verbose ~header ~sandbox ~version ()
+    ~show_all ~verbose ~header ~sandbox ~log_dir ~version ()
   =
-  let results_file = Filename.concat sandbox "results" in
-  let weights_file = Filename.concat sandbox "weights" in
-  let summary_dir = Filename.concat sandbox "summary" in
+  let results_file = Filename.concat log_dir "results" in
+  let weights_file = Filename.concat log_dir "weights" in
+  let summary_dir = Filename.concat log_dir "summary" in
   let data_dir = Filename.concat summary_dir "data" in
   let index_file = Filename.concat summary_dir "index.html" in
   let fullindex_file = Filename.concat summary_dir "fullindex.html" in
