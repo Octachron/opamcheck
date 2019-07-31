@@ -15,11 +15,11 @@ type loggers = {
 
 let loggers = ref None
 
-let init ~sandbox () =
-  let results = open_out (Filename.concat sandbox "results") in
-  let status = open_out (Filename.concat sandbox "status") in
-  let warnings = open_out (Filename.concat sandbox "warnings") in
-  let trace = open_out (Filename.concat sandbox "trace") in
+let init ~log_dir () =
+  let results = open_out (Filename.concat log_dir "results") in
+  let status = open_out (Filename.concat log_dir "status") in
+  let warnings = open_out (Filename.concat log_dir "warnings") in
+  let trace = open_out (Filename.concat log_dir "trace") in
   loggers :=
     Some { log = Stdlib.stdout; results; status; warnings; trace }
 

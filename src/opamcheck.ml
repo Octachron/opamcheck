@@ -11,6 +11,7 @@ open Util
 let tries = ref 2
 let compilers = ref []
 let sandbox = ref None
+let log_dir = ref None
 let show_all = ref false
 let verbose = ref false
 let header = ref ""
@@ -267,6 +268,9 @@ let spec = [
     "<path>  Set the location of the sandbox directory to <path> (mandatory; \
      alternatively can be specified by setting the OPCSANDBOX \
      environment variable)";
+  "-logdir", Arg.String (fun s -> log_dir := Some s),
+    "<path>  Set the location of the log directory to <path> (optional; \
+     set to the sandbox directory if not present)";
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
@@ -303,6 +307,12 @@ let get_sandbox () =
                environment variable OPCSANDBOX is undefined\n";
       exit 5
 
+let get_log_dir () =
+  match !log_dir with
+  | Some s -> s
+  | None -> get_sandbox ()
+
+
 (* Not tail-rec, only use with n < 100 *)
 let rec list_truncate l n =
   match l, n with
@@ -310,8 +320,8 @@ let rec list_truncate l n =
   | [], _ -> []
   | x :: t, n -> x :: list_truncate t (n-1)
 
-let main_run sandbox =
-  Log.init ~sandbox ();
+let main_run ~log_dir ~sandbox =
+  Log.init ~log_dir ();
   Log.log "reading packages files\n";
   let repo = Filename.concat sandbox "opam-repository" in
   let asts = fold_opam_files (fun acc dir name ->
@@ -343,7 +353,7 @@ let main_run sandbox =
   ) [] repo in
   let u = Package.make !compilers asts in
 
-  let oc = open_out (Filename.concat sandbox "weights") in
+  let oc = open_out (Filename.concat log_dir "weights") in
   let p_deps p d = fprintf oc "%d %s\n" (SS.cardinal d) p in
   SM.iter p_deps u.Package.revdeps;
   close_out oc;
@@ -427,10 +437,10 @@ let main_run sandbox =
   List.iter f packs;
   Status.message "\nDONE\n"
 
-let main_summarize sandbox =
+let main_summarize ~log_dir ~sandbox =
   let version = match !compilers with [v] -> v | _ -> assert false in
   Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
-                      ~sandbox ~version ()
+                      ~sandbox ~log_dir ~version ()
 
 let main () =
   Arg.parse spec arg_anon usage;
@@ -439,9 +449,10 @@ let main () =
     exit 1;
   end;
   let sandbox = get_sandbox () in
+  let log_dir = get_log_dir () in
   match !command with
   | None -> assert false
-  | Some `Run -> main_run sandbox
-  | Some `Summarize -> main_summarize sandbox
+  | Some `Run -> main_run ~log_dir ~sandbox
+  | Some `Summarize -> main_summarize ~log_dir ~sandbox
 
 ;; main ()

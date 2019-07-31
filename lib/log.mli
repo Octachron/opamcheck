@@ -3,7 +3,7 @@
    author: Damien Doligez
 *)
 
-val init : sandbox:string -> unit -> unit
+val init : log_dir:string -> unit -> unit
 
 val log_chan : unit -> Stdlib.out_channel
 (** stdout *)
