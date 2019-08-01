@@ -60,8 +60,8 @@ let extract_status (r: Dom.node Js.t) =
         | "ok" -> Some {time=Old; status=Ok}
         | "uninst" -> Some {time=Old; status=Uninstall}
         | "new_uninst" -> Some {time=New; status = Uninstall}
-        | "dep_fail" -> Some {status=Depfail; time=Old}
-        | "new_dep_fail" -> Some {status=Depfail; time=New}
+        | "depfail" -> Some {status=Depfail; time=Old}
+        | "new_depfail" -> Some {status=Depfail; time=New}
         | "new_fail" -> Some {status=Fail; time=New}
         | "old_fail" -> Some {status=Fail; time=Old}
         | "unknown" -> Some {status=Unknown; time=New}
