@@ -15,6 +15,7 @@ let log_dir = ref None
 let show_all = ref false
 let verbose = ref false
 let header = ref ""
+let prs: int list ref = ref []
 let smoke = ref false
 
 let parse_opam file =
@@ -273,6 +274,7 @@ let spec = [
      set to the sandbox directory if not present)";
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
+  "-pr", Arg.Int (fun x -> prs := x :: !prs), " Test a pr";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
