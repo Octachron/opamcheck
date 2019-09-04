@@ -461,7 +461,10 @@ let main_pr ~log_dir ~sandbox =
   main_run ~log_dir ~sandbox
 
 let main_summarize ~log_dir ~sandbox =
-  let version = match !compilers with [v] -> v | _ -> assert false in
+  let last_version = match List.rev !compilers with v :: _ -> v | [] -> assert false in
+  let version = match !pr with
+    | None -> last_version
+    | Some n -> Format.sprintf "%s+trunk+pr%d" last_version n in
   Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
                       ~sandbox ~log_dir ~version ()
 
