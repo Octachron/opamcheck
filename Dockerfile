@@ -27,9 +27,8 @@ RUN cp _build/default/src/opamcheck.exe opamcheck
 
 from STAGE_4 as STAGE_5
 USER opam
-COPY --chown=opam ./params /app
 COPY --chown=opam ./launch.sh /app
 RUN chmod u+x launch.sh
-CMD "/app/launch.sh"
+ENTRYPOINT ["/app/launch.sh"]
 
 
