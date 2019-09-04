@@ -15,7 +15,7 @@ let log_dir = ref None
 let show_all = ref false
 let verbose = ref false
 let header = ref ""
-let prs: int list ref = ref []
+let pr: int option ref = ref None
 let smoke = ref false
 
 let parse_opam file =
@@ -274,7 +274,7 @@ let spec = [
      set to the sandbox directory if not present)";
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
-  "-pr", Arg.Int (fun x -> prs := x :: !prs), " Test a pr";
+  "-pr", Arg.Int (fun x -> pr := Some x ), " Test a pr";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
@@ -291,6 +291,7 @@ let arg_anon =
     match !command, s with
     | None, "run" -> command := Some `Run
     | None, "summarize" -> command := Some `Summarize
+    | None, "prmode" -> command := Some `Pr
     | None, cmd -> raise (Arg.Bad ("Invalid command " ^ cmd))
     | Some `Run, ver -> compilers := ver :: !compilers
     | Some `Summarize, ver ->
@@ -298,6 +299,12 @@ let arg_anon =
         raise (Arg.Bad "too many arguments: \
                         only one version can be provided to summarize")
       else compilers := [ver]
+    | Some `Pr, ver ->
+      if !compilers <> [] then
+        raise (Arg.Bad "too many arguments: \
+                        only one version can be provided to prmode")
+      else compilers := [ver]
+
 
 let get_sandbox () =
   match !sandbox with
@@ -314,6 +321,16 @@ let get_log_dir () =
   | Some s -> s
   | None -> get_sandbox ()
 
+
+let generate_pr_compiler sandbox () =
+  match !compilers, !pr with
+  | ([] | _ :: _ :: _), _ | _, None ->
+    eprintf "prmode requires one base compiler and one pr to make the comparison"
+  | [base] , Some pr ->
+    let trunk = base ^"+trunk" in
+    Variant_generator.for_pr trunk sandbox pr;
+    let comp = Variant_generator.pr_variant_name trunk pr in
+    compilers := [ comp; trunk]
 
 (* Not tail-rec, only use with n < 100 *)
 let rec list_truncate l n =
@@ -439,6 +456,10 @@ let main_run ~log_dir ~sandbox =
   List.iter f packs;
   Status.message "\nDONE\n"
 
+let main_pr ~log_dir ~sandbox =
+  generate_pr_compiler sandbox ();
+  main_run ~log_dir ~sandbox
+
 let main_summarize ~log_dir ~sandbox =
   let version = match !compilers with [v] -> v | _ -> assert false in
   Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
@@ -456,5 +477,6 @@ let main () =
   | None -> assert false
   | Some `Run -> main_run ~log_dir ~sandbox
   | Some `Summarize -> main_summarize ~log_dir ~sandbox
+  | Some `Pr -> main_pr ~log_dir ~sandbox
 
 ;; main ()

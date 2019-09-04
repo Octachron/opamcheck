@@ -1,3 +1,8 @@
+
+let pr_variant_name trunk pr =
+  Format.sprintf "%s+pr%d" trunk pr
+
+
 let opam sandbox prn ppf = Format.fprintf ppf
 {| opam-version: "2.0"
 synopsis: "current trunk + pr %d"
@@ -26,28 +31,42 @@ build: [
 ]
 install: [make "install"]
 url {
-  git: "%s/pr%d"
+  src: "%s/pr%d"
 }@.
 |}
   prn sandbox prn
 
 
-let gen sandbox pr =
-  let cmd fmt = Format.kasprintf (fun x -> ignore (Sys.command x)) fmt in
-  cmd "git clone github.com/ocaml/ocaml.git %s/pr%d" sandbox pr;
-  cmd "cd %s/pr%d" sandbox pr;
-  cmd "git fetch origin pull/%d/head:pr%d" pr pr;
-  cmd "git checkout pr%d" pr
+let cmd fmt =
+  Format.kasprintf (fun x -> Format.eprintf "cmd: %s@." x;
+                     ignore (Sys.command x)) fmt
 
-let install_opam_file ver sandbox pr =
-  let loc =
-    String.concat Filename.dir_sep
-      [sandbox; "opam-repository"; "packages"; "ocaml-variants";
-       "ocaml-variants-" ^ ver ^"+pr" ^ string_of_int pr ] in
-  let f = open_out loc in
+
+let gen sandbox pr =
+ let cwd = Sys.getcwd () in
+ let ocaml = "https://github.com/ocaml/ocaml.git" in
+  cmd "git clone %s %s/pr%d" ocaml sandbox pr;
+  Sys.chdir (Filename.concat sandbox ("pr" ^ string_of_int pr));
+  cmd "git fetch origin pull/%d/head:pr%d" pr pr;
+  cmd "git checkout pr%d" pr;
+  Sys.chdir cwd
+
+let install_opam_file trunk sandbox pr =
+  let cwd = Sys.getcwd () in
+  let () =
+    Sys.chdir
+    @@ String.concat Filename.dir_sep
+      [sandbox; "opam-repository"; "packages"; "ocaml-variants" ] in
+  let loc = "ocaml-variants." ^ pr_variant_name trunk pr in
+  let () = Unix.mkdir loc 0o770 in
+  let opam_file = Filename.concat loc "opam" in
+  let f = open_out opam_file in
   let ff = Format.formatter_of_out_channel f in
   opam sandbox pr ff;
-  close_out f
+  close_out f;
+  cmd "git add %s" opam_file;
+  cmd {|git commit -m "trunk + pr%d"|} pr;
+  Sys.chdir cwd
 
 let for_pr trunk sandbox pr =
   let () = gen sandbox pr in
