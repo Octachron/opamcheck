@@ -17,4 +17,5 @@ printf "with arguments: %s</p>" "$*"
 printf "with arguments: %s</p>" "$*" >>$LOG/launch-info
 opamcheck -sandbox $OPCSANDBOX -retries 1 -logdir $LOG $PARAMS
 rm -rf $LOG/summary
-opamcheck summarize -logdir $LOG -head "$(<$LOG/launch-info)" $PARAMS
+shift
+opamcheck summarize -logdir $LOG -head "$(<$LOG/launch-info)" $@
