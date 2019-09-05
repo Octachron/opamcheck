@@ -42,22 +42,28 @@ let cmd fmt =
                      ignore (Sys.command x)) fmt
 
 
-let gen sandbox pr =
+let gen ~sandbox ~backport ~base pr =
  let cwd = Sys.getcwd () in
  let ocaml = "https://github.com/ocaml/ocaml.git" in
   cmd "git clone %s %s/pr%d" ocaml sandbox pr;
   Sys.chdir (Filename.concat sandbox ("pr" ^ string_of_int pr));
   cmd "git fetch origin pull/%d/head:pr%d" pr pr;
-  cmd "git checkout pr%d" pr;
+  if not backport then
+    cmd "git checkout pr%d" pr
+  else begin
+    cmd "git checkout %s" base;
+    cmd "git checkout -b %s+pr%d" base pr;
+    cmd {|git cherry-pick $(git merge-base trunk pr%d)..$(git log -n 1 --pretty=format:"%%H" pr%d)|} pr pr
+  end;
   Sys.chdir cwd
 
-let install_opam_file trunk sandbox pr =
+let install_opam_file base_trunk sandbox pr =
   let cwd = Sys.getcwd () in
   let () =
     Sys.chdir
     @@ String.concat Filename.dir_sep
       [sandbox; "opam-repository"; "packages"; "ocaml-variants" ] in
-  let loc = "ocaml-variants." ^ pr_variant_name trunk pr in
+  let loc = "ocaml-variants." ^ pr_variant_name base_trunk pr in
   let () = Unix.mkdir loc 0o770 in
   let opam_file = Filename.concat loc "opam" in
   let f = open_out opam_file in
@@ -68,6 +74,6 @@ let install_opam_file trunk sandbox pr =
   cmd {|git commit -m "trunk + pr%d"|} pr;
   Sys.chdir cwd
 
-let for_pr trunk sandbox pr =
-  let () = gen sandbox pr in
-  install_opam_file trunk sandbox pr
+let for_pr ~base ~sandbox ~backport pr =
+  let () = gen ~sandbox ~base ~backport pr in
+  install_opam_file base sandbox pr

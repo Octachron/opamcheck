@@ -17,6 +17,7 @@ let verbose = ref false
 let header = ref ""
 let pr: int option ref = ref None
 let smoke = ref false
+let backport = ref false
 
 let parse_opam file =
   try Parser.opam file with
@@ -275,6 +276,7 @@ let spec = [
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
   "-pr", Arg.Int (fun x -> pr := Some x ), " Test a pr";
+  "-backport", Arg.Set backport, " Backport the pr to the compiler passed as an argument";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
@@ -328,7 +330,7 @@ let generate_pr_compiler sandbox () =
     eprintf "prmode requires one base compiler and one pr to make the comparison"
   | [base] , Some pr ->
     let trunk = base ^"+trunk" in
-    Variant_generator.for_pr trunk sandbox pr;
+    Variant_generator.for_pr ~base:trunk ~sandbox ~backport:!backport pr;
     let comp = Variant_generator.pr_variant_name trunk pr in
     compilers := [ comp; trunk]
 
