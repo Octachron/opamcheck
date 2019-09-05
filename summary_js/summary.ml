@@ -62,10 +62,11 @@ let extract_status (r: Dom.node Js.t) =
         | "new_uninst" -> Some {time=New; status = Uninstall}
         | "depfail" -> Some {status=Depfail; time=Old}
         | "new_depfail" -> Some {status=Depfail; time=New}
+        | "fail" -> Some {status=Fail; time=New}
         | "new_fail" -> Some {status=Fail; time=New}
         | "old_fail" -> Some {status=Fail; time=Old}
         | "unknown" -> Some {status=Unknown; time=New}
-        | s -> debug "Unknown status:%s" s; None
+        | s -> debug "Unknown status:%s" s; Some {status=Unknown; time=New}
       )
   | _ -> debug "status: Non element %s" (Js.to_string r##.nodeName); None
 
