@@ -10,25 +10,25 @@ USER opam
 RUN eval $(opam env) && opam update && opam install minisat opam-file-format dune js_of_ocaml-lwt
 
 from STAGE_2 as STAGE_3
-COPY --chown=opam . /app
+COPY --chown=opam sandbox /app/
+COPY --chown=opam init.sh /app/
 USER opam
 WORKDIR /app
-COPY --chown=opam sandbox /app/sandbox
-RUN eval $(opam env) && make
 RUN bash init.sh as stage_3
-
+VOLUME ["/app/log"]
 
 from STAGE_3 as STAGE_4
-COPY --chown=opam . /app
 USER opam
 WORKDIR /app
+COPY --chown=opam lib /app/
+COPY --chown=opam src /app/
+COPY --chown=opam dune /app/
 RUN eval $(opam env) && make
 RUN cp _build/default/src/opamcheck.exe opamcheck
 
-from STAGE_4 as STAGE_5
+from STAGE_3 as STAGE_5
 USER opam
+COPY --from=STAGE_4 --chown=opam /app/opamcheck /app/
 COPY --chown=opam ./launch.sh /app
 RUN chmod u+x launch.sh
 ENTRYPOINT ["/app/launch.sh"]
-
-
