@@ -1,8 +1,9 @@
 #!/usr/bin/bash
-mkdir log
+sudo mkdir log
+sudo chown opam log
+sudo chown -R opam /app
 cd sandbox
 mkdir opamstate
-ls -la
 git clone https://github.com/ocaml/opam-repository
 cd opam-repository/packages
 git clone https://github.com/ocaml/ocaml-beta-repository.git
