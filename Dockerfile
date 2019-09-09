@@ -10,7 +10,7 @@ USER opam
 RUN eval $(opam env) && opam update && opam install minisat opam-file-format dune js_of_ocaml-lwt
 
 from STAGE_2 as STAGE_3
-COPY --chown=opam sandbox /app/
+COPY --chown=opam sandbox /app/sandbox
 COPY --chown=opam init.sh /app/
 USER opam
 WORKDIR /app
@@ -20,9 +20,12 @@ VOLUME ["/app/log"]
 from STAGE_3 as STAGE_4
 USER opam
 WORKDIR /app
-COPY --chown=opam lib /app/
-COPY --chown=opam src /app/
+COPY --chown=opam lib /app/lib
+COPY --chown=opam src /app/src
 COPY --chown=opam dune /app/
+COPY --chown=opam dune-project /app/
+COPY --chown=opam Makefile /app/
+
 RUN eval $(opam env) && make
 RUN cp _build/default/src/opamcheck.exe opamcheck
 

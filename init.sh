@@ -1,5 +1,7 @@
 #!/usr/bin/bash
-mkdir log
+sudo mkdir log
+sudo chown opam log
+sudo chown -R opam /app
 cd sandbox
 mkdir opamstate
 ls -la

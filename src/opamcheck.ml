@@ -17,7 +17,7 @@ let verbose = ref false
 let header = ref ""
 let pr: int option ref = ref None
 let smoke = ref false
-let backport = ref false
+let backport = ref None
 
 let parse_opam file =
   try Parser.opam file with
@@ -276,7 +276,7 @@ let spec = [
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
   "-pr", Arg.Int (fun x -> pr := Some x ), " Test a pr";
-  "-backport", Arg.Set backport, " Backport the pr to the compiler passed as an argument";
+  "-backport", Arg.String (fun x -> backport:= Some x), " Backport the pr to the compiler passed as an argument";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
@@ -329,10 +329,9 @@ let generate_pr_compiler sandbox () =
   | ([] | _ :: _ :: _), _ | _, None ->
     eprintf "prmode requires one base compiler and one pr to make the comparison"
   | [base] , Some pr ->
-    let trunk = base ^"+trunk" in
-    Variant_generator.for_pr ~base:trunk ~sandbox ~backport:!backport pr;
-    let comp = Variant_generator.pr_variant_name trunk pr in
-    compilers := [ comp; trunk]
+    Variant_generator.for_pr ~base ~sandbox ~backport:!backport pr;
+    let comp = Variant_generator.pr_variant_name base pr in
+    compilers := [ comp; base]
 
 (* Not tail-rec, only use with n < 100 *)
 let rec list_truncate l n =
@@ -466,7 +465,7 @@ let main_summarize ~log_dir ~sandbox =
   let last_version = match List.rev !compilers with v :: _ -> v | [] -> assert false in
   let version = match !pr with
     | None -> last_version
-    | Some n -> Format.sprintf "%s+trunk+pr%d" last_version n in
+    | Some n -> Format.sprintf "%s+pr%d" last_version n in
   Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
                       ~sandbox ~log_dir ~version ()
 
