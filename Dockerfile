@@ -12,6 +12,7 @@ RUN eval $(opam env) && opam update && opam install minisat opam-file-format dun
 from STAGE_2 as STAGE_3
 COPY --chown=opam sandbox /app/sandbox
 COPY --chown=opam init.sh /app/
+COPY --chown=opam opam.lock /app/
 USER opam
 WORKDIR /app
 RUN bash init.sh as stage_3
