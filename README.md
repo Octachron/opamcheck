@@ -27,3 +27,40 @@ instead of a bunch of bash and awk scripts.
          ./src/launch 4.03 4.06 4.09.0+beta1
 
    * Current status is displayed on sandbox/status, use "tail -f sandbox/status" to display it if needed.
+
+## Running with docker
+
+Another option to run opamcheck is to use the provided Dockerfile:
+
+  * build the docker image with
+
+```
+docker build -t opamcheck .
+```
+
+    The first run takes a lot of time to install all external deps
+
+  * run
+
+```
+docker run -v logdir:/app/log --name opamcheck_4.09 -it opamcheck run 4.07.0 4.08.1 4.09.0
+
+```
+
+
+  * Current status is then displayed at /var/lib/docker/volumes/logdir/_data/status
+   It can be displayed with:
+
+```
+sudo tail -f /var/lib/docker/volumes/logdir/_data/status
+```
+
+If you want to test a specific PR against trunk, the `run` command above can be updated to:
+
+
+```
+docker run -v prN:/app/log --name opamcheck_prN -it opamcheck run -prmode N 4.10.0+trunk
+
+```
+
+If the PR was made against 4.10.0+trunk.
