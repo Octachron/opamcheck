@@ -295,12 +295,7 @@ let arg_anon =
     | None, "summarize" -> command := Some `Summarize
     | None, "prmode" -> command := Some `Pr
     | None, cmd -> raise (Arg.Bad ("Invalid command " ^ cmd))
-    | Some `Run, ver -> compilers := ver :: !compilers
-    | Some `Summarize, ver ->
-      if !compilers <> [] then
-        raise (Arg.Bad "too many arguments: \
-                        only one version can be provided to summarize")
-      else compilers := [ver]
+    | Some (`Run|`Summarize), ver -> compilers := ver :: !compilers
     | Some `Pr, ver ->
       if !compilers <> [] then
         raise (Arg.Bad "too many arguments: \
