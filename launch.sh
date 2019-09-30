@@ -1,5 +1,5 @@
 #!/usr/bin/dash
-echo Launching opamcheck for $(cat params)
+echo Launching opamcheck for $*
 
 PATH="${PATH}:."
 PATH=${PATH##*.opam}
