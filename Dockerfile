@@ -1,9 +1,5 @@
-from ocaml/opam2:ubuntu as STAGE_1
-COPY --chown=opam ./external_deps_install.sh /
-RUN bash /external_deps_install.sh
 
-#from ocaml/opam2:ubuntu as STAGE_2
-from STAGE_1 as STAGE_2
+from opamcheck:preimage as STAGE_2
 RUN sudo apt-get update && sudo apt-get install -y \
   m4
 USER opam
