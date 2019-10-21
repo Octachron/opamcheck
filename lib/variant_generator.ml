@@ -79,7 +79,13 @@ let gen_pr ~base ~where pr =
   Sys.chdir cwd
 
 let gen_branch ~where ~src  =
-  cmd "git clone %s %s" src where
+  match String.split_on_char ',' src with
+  | [src] ->
+    cmd "git clone %s %s" src where
+  | [src; branch] ->
+    cmd "git clone --single-branch --branch %s %s %s"
+      branch src where
+  | _ -> raise (Invalid_argument "Opamcheck: invalid source")
 
 let install_opam_file ~sandbox ~variant =
   let cwd = Sys.getcwd () in
