@@ -17,7 +17,7 @@ let verbose = ref false
 let header = ref ""
 let pr: [ `Pr of int | `Branch of string ] option ref = ref None
 let smoke = ref false
-let backport = ref None
+let online_summary: int option ref = ref None
 
 let parse_opam file =
   try Parser.opam file with
@@ -277,7 +277,7 @@ let spec = [
          " Smoke test mode: compile only a few packages (run)";
   "-pr", Arg.Int (fun x -> pr := Some (`Pr x) ), "<int> : test a pr with issue number <int>";
   "-branch", Arg.String (fun x -> pr := Some (`Branch x) ), "<src>: test a branch available at location <src>";
-  "-backport", Arg.String (fun x -> backport:= Some x), " Backport the pr to the compiler passed as an argument";
+  "-online-summary", Arg.Int (fun n -> online_summary := Some n), "<n>: build summary every n packages";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
@@ -338,6 +338,27 @@ let rec list_truncate l n =
   | _, 0 -> []
   | [], _ -> []
   | x :: t, n -> x :: list_truncate t (n-1)
+
+
+let main_summarize ~log_dir ~sandbox =
+  let last_version = match !compilers with v :: _ -> v | [] -> assert false in
+  let version = match !pr with
+    | None -> last_version
+    | Some (`Pr pr) -> Variant_generator.(name  @@ pr_variant ~base:last_version ~pr)
+    | Some (`Branch src) -> Variant_generator.(name @@ branch_variant ~base:last_version ~src) in
+  Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
+                      ~sandbox ~log_dir ~version ()
+
+ let summarizer ~log_dir ~sandbox = match !online_summary with
+   | None -> ignore
+   | Some every_n_package ->
+     let counter = ref every_n_package in
+     fun () ->
+       if !counter <= 0 then begin
+         main_summarize ~log_dir ~sandbox;
+         counter := every_n_package
+       end
+       else decr counter
 
 let main_run ~log_dir ~sandbox =
   Log.init ~log_dir ();
@@ -424,7 +445,9 @@ let main_run ~log_dir ~sandbox =
     cur.pack_done <- 0;
     cur.pack_total <- List.length packs
   );
+  let summarize = summarizer ~log_dir ~sandbox in
   let f pack =
+    summarize ();
     test_comp_pack ~sandbox u p comp pack;
     Status.(cur.pack_done <- cur.pack_done + 1)
   in
@@ -445,6 +468,7 @@ let main_run ~log_dir ~sandbox =
       match comps with
       | [] -> ()
       | h :: t ->
+         summarize ();
          test_comp_pack ~sandbox u p h pack;
          if get_status p pack.Package.name pack.Package.version h <> OK then
            loop t
@@ -460,14 +484,6 @@ let main_pr ~log_dir ~sandbox =
   generate_pr_compiler sandbox ();
   main_run ~log_dir ~sandbox
 
-let main_summarize ~log_dir ~sandbox =
-  let last_version = match !compilers with v :: _ -> v | [] -> assert false in
-  let version = match !pr with
-    | None -> last_version
-    | Some (`Pr pr) -> Variant_generator.(name  @@ pr_variant ~base:last_version ~pr)
-    | Some (`Branch src) -> Variant_generator.(name @@ branch_variant ~base:last_version ~src) in
-  Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
-                      ~sandbox ~log_dir ~version ()
 
 let main () =
   Arg.parse spec arg_anon usage;
