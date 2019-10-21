@@ -15,7 +15,7 @@ let log_dir = ref None
 let show_all = ref false
 let verbose = ref false
 let header = ref ""
-let pr: int option ref = ref None
+let pr: [ `Pr of int | `Branch of string ] option ref = ref None
 let smoke = ref false
 let backport = ref None
 
@@ -275,7 +275,8 @@ let spec = [
      set to the sandbox directory if not present)";
   "-smoke", Arg.Set smoke,
          " Smoke test mode: compile only a few packages (run)";
-  "-pr", Arg.Int (fun x -> pr := Some x ), " Test a pr";
+  "-pr", Arg.Int (fun x -> pr := Some (`Pr x) ), "<int> : test a pr with issue number <int>";
+  "-branch", Arg.String (fun x -> pr := Some (`Branch x) ), "<src>: test a branch available at location <src>";
   "-backport", Arg.String (fun x -> backport:= Some x), " Backport the pr to the compiler passed as an argument";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
@@ -322,10 +323,13 @@ let get_log_dir () =
 let generate_pr_compiler sandbox () =
   match !compilers, !pr with
   | ([] | _ :: _ :: _), _ | _, None ->
-    eprintf "prmode requires one base compiler and one pr to make the comparison"
-  | [base] , Some pr ->
-    Variant_generator.for_pr ~base ~sandbox ~backport:!backport pr;
-    let comp = Variant_generator.pr_variant_name base pr in
+    eprintf "prmode requires one base compiler and one pr or branch to make the comparison"
+  | [base] , Some b ->
+    let variant = match b with
+        | `Pr pr -> Variant_generator.for_pr ~base ~sandbox pr
+        | `Branch src -> Variant_generator.for_branch ~base ~sandbox ~src
+    in
+    let comp = Variant_generator.name variant in
     compilers := [ comp; base]
 
 (* Not tail-rec, only use with n < 100 *)
@@ -460,7 +464,8 @@ let main_summarize ~log_dir ~sandbox =
   let last_version = match !compilers with v :: _ -> v | [] -> assert false in
   let version = match !pr with
     | None -> last_version
-    | Some n -> Format.sprintf "%s+pr%d" last_version n in
+    | Some (`Pr pr) -> Variant_generator.(name  @@ pr_variant ~base:last_version ~pr)
+    | Some (`Branch src) -> Variant_generator.(name @@ branch_variant ~base:last_version ~src) in
   Summarize.summarize ~show_all:!show_all ~verbose:!verbose ~header:!header
                       ~sandbox ~log_dir ~version ()
 
