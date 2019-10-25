@@ -15,7 +15,7 @@ printf "<p>opamcheck launched on %s<br>" "$(date -u +"%F %T UTC")" \
   > $LOG/launch-info
 printf "with arguments: %s</p>" "$*"
 printf "with arguments: %s</p>" "$*" >>$LOG/launch-info
-opamcheck -sandbox $OPCSANDBOX -retries 1 -logdir $LOG $PARAMS
+opamcheck -sandbox $OPCSANDBOX -logdir $LOG $PARAMS
 rm -rf $LOG/summary
 shift
 opamcheck summarize -logdir $LOG -head "$(<$LOG/launch-info)" $@
