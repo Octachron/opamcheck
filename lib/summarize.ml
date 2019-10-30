@@ -18,6 +18,9 @@ let command ~verbose ?(ignore_errors=false) s =
      if not ignore_errors then
        failwith (sprintf "command `%s` failed with code %d\n" s n)
 
+let commandf ~verbose ?ignore_errors fmt =
+  Format.ksprintf (command ~verbose ?ignore_errors) fmt
+
 type status = OK | Uninst | Fail | Depfail | Unknown
 
 let get m p =
@@ -382,9 +385,14 @@ let summarize
   command ~verbose (sprintf "rm -rf %s" (Filename.quote mystate_dir));
   command ~verbose (sprintf "mkdir -p %s" (Filename.quote mystate_dir));
   let f d =
-    let origin = Filename.(quote (concat state_dir d)) in
     let dest = Filename.(quote (concat mystate_dir d)) in
-    command ~verbose (sprintf "git clone %s %s" origin dest);
+    if Sys.file_exists dest then (
+      commandf ~verbose "cd %s" dest;
+      command ~verbose "git fetch"
+    )
+    else
+      let origin = Filename.(quote (concat state_dir d)) in
+      command ~verbose (sprintf "git clone %s %s" origin dest);
   in
   Array.iter f (Sys.readdir state_dir);
   let index = open_out index_file in
