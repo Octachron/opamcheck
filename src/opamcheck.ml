@@ -18,6 +18,7 @@ let header = ref ""
 let pr: [ `Pr of int | `Branch of string ] option ref = ref None
 let smoke = ref false
 let online_summary: int option ref = ref None
+let only = ref []
 
 let parse_opam file =
   try Parser.opam file with
@@ -278,6 +279,7 @@ let spec = [
   "-pr", Arg.Int (fun x -> pr := Some (`Pr x) ), "<int> : test a pr with issue number <int>";
   "-branch", Arg.String (fun x -> pr := Some (`Branch x) ), "<src>: test a branch available at location <src>";
   "-online-summary", Arg.Int (fun n -> online_summary := Some n), "<n>: build summary every n packages";
+  "-only", Arg.String (fun s -> only := String.split_on_char ',' s @ !only), "<s1>,<s2>,...: only test the following packages";
   "-v", Arg.Set verbose, " Activate verbose mode (summarize)";
   "-version", Arg.Unit print_version, " Print version number and exit";
 ]
@@ -355,6 +357,7 @@ let main_summarize ~log_dir ~sandbox =
      let counter = ref every_n_package in
      fun () ->
        if !counter <= 0 then begin
+         Log.log "Summarizing result\n";
          main_summarize ~log_dir ~sandbox;
          counter := every_n_package
        end
@@ -453,6 +456,9 @@ let main_run ~log_dir ~sandbox =
   in
   Log.log "## first pass (%d packages)\n" Status.(cur.pack_total);
   let packs = if !smoke then list_truncate packs 5 else packs in
+  let packs = match !only with
+    | [] -> packs
+    | l -> List.filter (fun x -> List.mem x.Package.name l) packs in
   List.iter f packs;
   (* Second pass: try failing packages with every other compiler.
      Stop as soon as it installs OK with some configuration.
