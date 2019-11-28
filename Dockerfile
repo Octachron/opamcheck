@@ -19,6 +19,7 @@ USER opam
 WORKDIR /app
 COPY --chown=opam lib /app/lib
 COPY --chown=opam src /app/src
+COPY --chown=opam summary_js /app/summary_js
 COPY --chown=opam dune /app/
 COPY --chown=opam dune-project /app/
 COPY --chown=opam Makefile /app/
@@ -29,6 +30,7 @@ RUN cp _build/default/src/opamcheck.exe opamcheck
 from STAGE_3 as STAGE_5
 USER opam
 COPY --from=STAGE_4 --chown=opam /app/opamcheck /app/
+COPY --from=STAGE_4 --chown=opam /app/summary_js.bc.js /app/
 COPY --chown=opam ./launch.sh /app
 RUN chmod u+x launch.sh
 ENTRYPOINT ["/app/launch.sh"]

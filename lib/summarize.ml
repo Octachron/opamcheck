@@ -335,7 +335,7 @@ thead button { height:100%; width:100%; }
 "
 
 let html_body_start = ("<body>\n%s<table id=\"opamcheck_table\">\n" : _ format)
-let html_body_end = "</table>\n<script src=\"summary_js.bc.js\"></script>\n</body></html>\n"
+let html_body_end = "</table>\n<script src=\"summary_js.bc.js\"></script>\n</body></html>"
 
 let read_results ~version file =
   let ic = open_in file in
@@ -364,7 +364,6 @@ let summarize
   let state_dir = Filename.concat sandbox "opamstate" in
   let mystate_dir = Filename.concat sandbox "opamstate.tmp" in
   let tmp_dir = Filename.concat sandbox "tmp" in
-
   let weigths = read_weights weights_file in
   let results = SM.bindings (read_results ~version results_file) in
   let groups = group_packs results [] in
@@ -378,12 +377,11 @@ let summarize
   let groups = List.map (fun g -> (g, get_weight g)) groups in
   let cmp (_, w1) (_, w2) = compare w2 w1 in
   let groups = List.sort cmp groups in
-  let cmd = sprintf "mkdir -p %s" (Filename.concat summary_dir "data") in
-  command ~verbose cmd;
-  let cmd = sprintf "mkdir -p %s" (Filename.quote tmp_dir) in
-  command ~verbose cmd;
-  command ~verbose (sprintf "rm -rf %s" (Filename.quote mystate_dir));
-  command ~verbose (sprintf "mkdir -p %s" (Filename.quote mystate_dir));
+  commandf ~verbose "mkdir -p %s" (Filename.concat summary_dir "data");
+  commandf ~verbose "cp summary_js.bc.js %s" summary_dir;
+  commandf ~verbose "mkdir -p %s" (Filename.quote tmp_dir);
+  commandf ~verbose "rm -rf %s" (Filename.quote mystate_dir);
+  commandf ~verbose "mkdir -p %s" (Filename.quote mystate_dir);
   let f d =
     let dest = Filename.(quote (concat mystate_dir d)) in
     if Sys.file_exists dest then (
@@ -392,7 +390,7 @@ let summarize
     )
     else
       let origin = Filename.(quote (concat state_dir d)) in
-      command ~verbose (sprintf "git clone %s %s" origin dest);
+      commandf ~verbose "git clone %s %s" origin dest;
   in
   Array.iter f (Sys.readdir state_dir);
   let index = open_out index_file in
@@ -406,4 +404,5 @@ let summarize
        index fullindex)
     groups;
   fprintf index "%s" html_body_end;
-  fprintf fullindex "%s" html_body_end;
+  fprintf fullindex "%s@." html_body_end;
+  close_out index; close_out fullindex
