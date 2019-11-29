@@ -10,6 +10,8 @@ LOG=/app/log
 export OPCSANDBOX=$OPCSANDBOX
 set $PARAMS
 unset OPAMSWITCH
+printf "launching nginx"
+sudo nginx -c /app/nginx.conf
 printf "<p>opamcheck launched on %s<br>" "$(date -u +"%F %T UTC")"
 printf "<p>opamcheck launched on %s<br>" "$(date -u +"%F %T UTC")" \
   > $LOG/launch-info

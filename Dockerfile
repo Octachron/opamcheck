@@ -23,6 +23,9 @@ USER opam
 COPY --from=STAGE_2 --chown=opam /app/opamcheck /app/
 COPY --from=STAGE_2 --chown=opam /app/summary_js.bc.js /app/
 COPY --chown=opam ./launch.sh /app
+COPY --chown=opam ./nginx.conf /app
+RUN sudo apt install nginx -y
 RUN chmod u+x launch.sh
 VOLUME ["/app/log"]
+EXPOSE 80
 ENTRYPOINT ["/app/launch.sh"]
