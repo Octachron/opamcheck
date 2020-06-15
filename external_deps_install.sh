@@ -12,7 +12,7 @@ query_and_install () {
     echo No dependencies
   else
 	echo deps $l
-        install $l
+        install $l || echo skiping installation of $l
   fi
 }
 
